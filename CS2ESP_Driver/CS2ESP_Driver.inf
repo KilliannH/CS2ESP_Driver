@@ -6,7 +6,7 @@ Signature="$WINDOWS NT$"
 Class=System
 ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
 Provider=%ManufacturerName%
-DriverVer=01/01/2024,1.0.0.0
+DriverVer=01/01/2020,1.0.0.0
 CatalogFile=CS2ESP_Driver.cat
 PnpLockdown=1
 
