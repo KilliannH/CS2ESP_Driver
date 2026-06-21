@@ -171,7 +171,12 @@
     </DriverSign>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Inf Include="CS2ESP_Driver.inf" />
+    <Inf Include="CS2ESP_Driver.inf">
+      <SpecifyDriverVerDirectiveDate>true</SpecifyDriverVerDirectiveDate>
+      <DateStamp>01/01/2020</DateStamp>
+      <SpecifyDriverDirectiveVersion>true</SpecifyDriverDirectiveVersion>
+      <TimeStamp>1.0.0.0</TimeStamp>
+    </Inf>
   </ItemGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
