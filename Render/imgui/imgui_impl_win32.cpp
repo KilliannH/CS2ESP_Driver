@@ -850,7 +850,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandlerEx(HWND hwnd, UINT msg, WPA
 // require a manifest to be functional for checks above 8.1. See https://github.com/ocornut/imgui/issues/4200
 static BOOL _IsWindowsVersionOrGreater(WORD major, WORD minor, WORD)
 {
-    typedef LONG(WINAPI* PFN_RtlVerifyVersionInfo)(OSVERSIONINFOEXW*, ULONG, ULONGLONG);
+    typedef LONG(WINAPI* PFN_RtlVerifyVersionInfo)(OSVERSIONINFOEXW*, ULONG64, ULONGLONG);
     static PFN_RtlVerifyVersionInfo RtlVerifyVersionInfoFn = nullptr;
     if (RtlVerifyVersionInfoFn == nullptr)
         if (HMODULE ntdllModule = ::GetModuleHandleA("ntdll.dll"))

@@ -1,10 +1,7 @@
 ﻿  Building 'CS2ESP_Driver' with toolset 'WindowsKernelModeDriver10.0' and the 'Desktop' target platform.
   Stamping x64\Release\CS2ESP_Driver.inf
-  Stamping [Version] section with DriverVer=06/21/2026,22.5.9.311
+  Stamping [Version] section with DriverVer=06/21/2026,22.50.2.788
   CS2ESP_Driver.vcxproj -> C:\Users\killi\Documents\Simple Driver\x64\Release\CS2ESP_Driver.sys
-  Done Adding Additional Store
-  Successfully signed: C:\Users\killi\Documents\Simple Driver\x64\Release\CS2ESP_Driver.sys
-  
   .........................
   Signability test complete.
   

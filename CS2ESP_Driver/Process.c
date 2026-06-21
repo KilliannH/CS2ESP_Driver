@@ -55,7 +55,7 @@ NTSTATUS FindProcessByName(PWCHAR ProcessName, PEPROCESS* OutProcess) {
     return STATUS_NOT_FOUND;
 }
 
-ULONG GetModuleBase(PEPROCESS Process, PWCHAR ModuleName) {
+ULONG64 GetModuleBase(PEPROCESS Process, PWCHAR ModuleName) {
     DbgPrint("[CS2] GetModuleBase called for: %ws\n", ModuleName);
 
     KAPC_STATE apcState;
@@ -87,8 +87,8 @@ ULONG GetModuleBase(PEPROCESS Process, PWCHAR ModuleName) {
         if (entry->BaseDllName.Buffer) {
             DbgPrint("[CS2] Module %d: %ws (Base: 0x%p)\n", moduleCount, entry->BaseDllName.Buffer, entry->DllBase);
             if (_wcsnicmp(entry->BaseDllName.Buffer, ModuleName, wcslen(ModuleName)) == 0) {
-                ULONG base = (ULONG)entry->DllBase;
-                DbgPrint("[CS2] Found %ws at 0x%X\n", ModuleName, base);
+                ULONG64 base = (ULONG64)entry->DllBase;
+                DbgPrint("[CS2] Found %ws at 0x%llX\n", ModuleName, base);
                 KeUnstackDetachProcess(&apcState);
                 return base;
             }

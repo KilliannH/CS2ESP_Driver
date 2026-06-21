@@ -1290,7 +1290,7 @@ static stbtt__buf stbtt__cff_index_get(stbtt__buf b, int i)
 
 static stbtt_uint16 ttUSHORT(stbtt_uint8 *p) { return p[0]*256 + p[1]; }
 static stbtt_int16 ttSHORT(stbtt_uint8 *p)   { return p[0]*256 + p[1]; }
-static stbtt_uint32 ttULONG(stbtt_uint8 *p)  { return (p[0]<<24) + (p[1]<<16) + (p[2]<<8) + p[3]; }
+static stbtt_uint32 ttULONG64(stbtt_uint8 *p)  { return (p[0]<<24) + (p[1]<<16) + (p[2]<<8) + p[3]; }
 static stbtt_int32 ttLONG(stbtt_uint8 *p)    { return (p[0]<<24) + (p[1]<<16) + (p[2]<<8) + p[3]; }
 
 #define stbtt_tag4(p,c0,c1,c2,c3) ((p)[0] == (c0) && (p)[1] == (c1) && (p)[2] == (c2) && (p)[3] == (c3))
@@ -1316,7 +1316,7 @@ static stbtt_uint32 stbtt__find_table(stbtt_uint8 *data, stbtt_uint32 fontstart,
    for (i=0; i < num_tables; ++i) {
       stbtt_uint32 loc = tabledir + 16*i;
       if (stbtt_tag(data+loc+0, tag))
-         return ttULONG(data+loc+8);
+         return ttULONG64(data+loc+8);
    }
    return 0;
 }
@@ -1330,11 +1330,11 @@ static int stbtt_GetFontOffsetForIndex_internal(unsigned char *font_collection, 
    // check if it's a TTC
    if (stbtt_tag(font_collection, "ttcf")) {
       // version 1?
-      if (ttULONG(font_collection+4) == 0x00010000 || ttULONG(font_collection+4) == 0x00020000) {
+      if (ttULONG64(font_collection+4) == 0x00010000 || ttULONG64(font_collection+4) == 0x00020000) {
          stbtt_int32 n = ttLONG(font_collection+8);
          if (index >= n)
             return -1;
-         return ttULONG(font_collection+12+index*4);
+         return ttULONG64(font_collection+12+index*4);
       }
    }
    return -1;
@@ -1349,7 +1349,7 @@ static int stbtt_GetNumberOfFonts_internal(unsigned char *font_collection)
    // check if it's a TTC
    if (stbtt_tag(font_collection, "ttcf")) {
       // version 1?
-      if (ttULONG(font_collection+4) == 0x00010000 || ttULONG(font_collection+4) == 0x00020000) {
+      if (ttULONG64(font_collection+4) == 0x00010000 || ttULONG64(font_collection+4) == 0x00020000) {
          return ttLONG(font_collection+8);
       }
    }
@@ -1376,7 +1376,7 @@ static int stbtt__get_svg(stbtt_fontinfo *info)
    if (info->svg < 0) {
       t = stbtt__find_table(info->data, info->fontstart, "SVG ");
       if (t) {
-         stbtt_uint32 offset = ttULONG(info->data + t + 2);
+         stbtt_uint32 offset = ttULONG64(info->data + t + 2);
          info->svg = t + offset;
       } else {
          info->svg = 0;
@@ -1480,14 +1480,14 @@ static int stbtt_InitFont_internal(stbtt_fontinfo *info, unsigned char *data, in
                case STBTT_MS_EID_UNICODE_BMP:
                case STBTT_MS_EID_UNICODE_FULL:
                   // MS/Unicode
-                  info->index_map = cmap + ttULONG(data+encoding_record+4);
+                  info->index_map = cmap + ttULONG64(data+encoding_record+4);
                   break;
             }
             break;
         case STBTT_PLATFORM_ID_UNICODE:
             // Mac/iOS has these
             // all the encodingIDs are unicode, so we don't bother to check it
-            info->index_map = cmap + ttULONG(data+encoding_record+4);
+            info->index_map = cmap + ttULONG64(data+encoding_record+4);
             break;
       }
    }
@@ -1564,20 +1564,20 @@ STBTT_DEF int stbtt_FindGlyphIndex(const stbtt_fontinfo *info, int unicode_codep
          return ttUSHORT(data + offset + (unicode_codepoint-start)*2 + index_map + 14 + segcount*6 + 2 + 2*item);
       }
    } else if (format == 12 || format == 13) {
-      stbtt_uint32 ngroups = ttULONG(data+index_map+12);
+      stbtt_uint32 ngroups = ttULONG64(data+index_map+12);
       stbtt_int32 low,high;
       low = 0; high = (stbtt_int32)ngroups;
       // Binary search the right group.
       while (low < high) {
          stbtt_int32 mid = low + ((high-low) >> 1); // rounds down, so low <= mid < high
-         stbtt_uint32 start_char = ttULONG(data+index_map+16+mid*12);
-         stbtt_uint32 end_char = ttULONG(data+index_map+16+mid*12+4);
+         stbtt_uint32 start_char = ttULONG64(data+index_map+16+mid*12);
+         stbtt_uint32 end_char = ttULONG64(data+index_map+16+mid*12+4);
          if ((stbtt_uint32) unicode_codepoint < start_char)
             high = mid;
          else if ((stbtt_uint32) unicode_codepoint > end_char)
             low = mid+1;
          else {
-            stbtt_uint32 start_glyph = ttULONG(data+index_map+16+mid*12+8);
+            stbtt_uint32 start_glyph = ttULONG64(data+index_map+16+mid*12+8);
             if (format == 12)
                return start_glyph + unicode_codepoint-start_char;
             else // format == 13
@@ -1618,8 +1618,8 @@ static int stbtt__GetGlyfOffset(const stbtt_fontinfo *info, int glyph_index)
       g1 = info->glyf + ttUSHORT(info->data + info->loca + glyph_index * 2) * 2;
       g2 = info->glyf + ttUSHORT(info->data + info->loca + glyph_index * 2 + 2) * 2;
    } else {
-      g1 = info->glyf + ttULONG (info->data + info->loca + glyph_index * 4);
-      g2 = info->glyf + ttULONG (info->data + info->loca + glyph_index * 4 + 4);
+      g1 = info->glyf + ttULONG64 (info->data + info->loca + glyph_index * 4);
+      g2 = info->glyf + ttULONG64 (info->data + info->loca + glyph_index * 4 + 4);
    }
 
    return g1==g2 ? -1 : g1; // if length is 0, return -1
@@ -2380,7 +2380,7 @@ static int stbtt__GetGlyphKernInfoAdvance(const stbtt_fontinfo *info, int glyph1
    needle = glyph1 << 16 | glyph2;
    while (l <= r) {
       m = (l + r) >> 1;
-      straw = ttULONG(data+18+(m*6)); // note: unaligned read
+      straw = ttULONG64(data+18+(m*6)); // note: unaligned read
       if (needle < straw)
          r = m - 1;
       else if (needle > straw)
@@ -2706,8 +2706,8 @@ STBTT_DEF int stbtt_GetGlyphSVG(const stbtt_fontinfo *info, int gl, const char *
 
    svg_doc = stbtt_FindSVGDoc(info, gl);
    if (svg_doc != NULL) {
-      *svg = (char *) data + info->svg + ttULONG(svg_doc + 4);
-      return ttULONG(svg_doc + 8);
+      *svg = (char *) data + info->svg + ttULONG64(svg_doc + 4);
+      return ttULONG64(svg_doc + 8);
    } else {
       return 0;
    }

@@ -1,6 +1,6 @@
 #pragma once
 #include "Driver.h"
 
-ULONG GetEntityFromHandle(ULONG entityList, ULONG handle);
-ULONG ScanViewMatrix();
+ULONG64 GetEntityFromHandle(ULONG64 entityList, ULONG handle);
+ULONG64 ScanViewMatrix();
 VOID CollectEnemyData(PESP_DATA Data);

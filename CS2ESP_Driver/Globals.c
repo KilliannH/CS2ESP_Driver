@@ -1,8 +1,8 @@
 #include "Globals.h"
 
 PEPROCESS g_TargetProcess = NULL;
-ULONG g_ClientBase = 0;
-ULONG g_ViewMatrixAddr = 0;
+ULONG64 g_ClientBase = 0;
+ULONG64 g_ViewMatrixAddr = 0;
 BOOLEAN g_IsInitialized = FALSE;
 
 const GameOffsets g_Offsets = {
