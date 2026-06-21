@@ -1,0 +1,54 @@
+; CS2ESP_Driver.inf
+; Fichier INF pour installer le driver kernel CS2ESP
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%ManufacturerName%
+DriverVer=01/01/2024,1.0.0.0
+CatalogFile=CS2ESP_Driver.cat
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12  ; Drivers directory
+
+[SourceDisksNames]
+1 = %DiskName%
+
+[SourceDisksFiles]
+CS2ESP_Driver.sys = 1
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%DriverDesc% = CS2ESP_Install, CS2ESP
+
+[CS2ESP_Install]
+CopyFiles=DriverCopyFiles
+AddReg=DriverAddReg
+AddService=CS2ESP,2,CS2ESP_Service
+
+[CS2ESP_Install.Services]
+AddService=CS2ESP,2,CS2ESP_Service
+
+[CS2ESP_Service]
+DisplayName=%ServiceDesc%
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%12%\CS2ESP_Driver.sys
+
+[DriverCopyFiles]
+CS2ESP_Driver.sys
+
+[DriverAddReg]
+HKR,,"Driver","0","CS2ESP_Driver.sys"
+HKR,,"Description","0","%DriverDesc%"
+
+[Strings]
+ManufacturerName="CS2ESP Driver"
+DriverDesc="CS2ESP Kernel Driver"
+ServiceDesc="CS2ESP Kernel Driver Service"
+DiskName="CS2ESP Driver Installation Disk"
