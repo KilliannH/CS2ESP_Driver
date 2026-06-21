@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MemoryDemoDriver", "CS2ESP_Driver\CS2ESP_Driver.vcxproj", "{53BCE7BF-9C0A-69C1-41C7-5D4D2238EC7C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MemoryDemoHarness", "Render\Render.vcxproj", "{600484DF-FE07-4F96-BB85-AC5C1F924AB6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53BCE7BF-9C0A-69C1-41C7-5D4D2238EC7C}.Debug|x64.ActiveCfg = Debug|x64
+		{53BCE7BF-9C0A-69C1-41C7-5D4D2238EC7C}.Debug|x64.Build.0 = Debug|x64
+		{53BCE7BF-9C0A-69C1-41C7-5D4D2238EC7C}.Release|x64.ActiveCfg = Release|x64
+		{53BCE7BF-9C0A-69C1-41C7-5D4D2238EC7C}.Release|x64.Build.0 = Release|x64
+		{600484DF-FE07-4F96-BB85-AC5C1F924AB6}.Debug|x64.ActiveCfg = Debug|x64
+		{600484DF-FE07-4F96-BB85-AC5C1F924AB6}.Debug|x64.Build.0 = Debug|x64
+		{600484DF-FE07-4F96-BB85-AC5C1F924AB6}.Release|x64.ActiveCfg = Release|x64
+		{600484DF-FE07-4F96-BB85-AC5C1F924AB6}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
