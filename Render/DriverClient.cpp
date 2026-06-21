@@ -1,14 +1,11 @@
 #include "DriverClient.hpp"
 #include <Windows.h>
 
-namespace ESP {
+namespace Demo {
     DriverClient::DriverClient() = default;
 
     DriverClient::~DriverClient() {
-        m_running = false;
-        if (m_workerThread.joinable()) {
-            m_workerThread.join();
-        }
+        ClearTarget();
         if (m_hDriver != INVALID_HANDLE_VALUE) {
             CloseHandle(m_hDriver);
         }
@@ -16,8 +13,8 @@ namespace ESP {
 
     bool DriverClient::Initialize() {
         m_hDriver = CreateFileW(
-            L"\\\\.\\CS2ESP",
-            GENERIC_READ,
+            L"\\\\.\\MemoryDemo",
+            GENERIC_READ | GENERIC_WRITE,
             0,
             nullptr,
             OPEN_EXISTING,
@@ -29,36 +26,65 @@ namespace ESP {
             return false;
         }
 
-        m_running = true;
-        m_workerThread = std::thread(&DriverClient::UpdateLoop, this);
         return true;
     }
 
-    void DriverClient::GetData(ESPData& outData) {
-        std::lock_guard<std::mutex> lock(m_dataMutex);
-        outData = m_currentData;
+    bool DriverClient::RegisterTarget(DWORD processId, const DemoMemoryBlock* block, std::uint64_t nonce) {
+        if (m_hDriver == INVALID_HANDLE_VALUE || !block) {
+            return false;
+        }
+
+        DemoRegisterRequest request{};
+        request.ProcessId = processId;
+        request.Address = reinterpret_cast<std::uint64_t>(block);
+        request.Nonce = nonce;
+
+        DWORD bytesReturned = 0;
+        return DeviceIoControl(
+            m_hDriver,
+            IOCTL_DEMO_REGISTER_TARGET,
+            &request,
+            sizeof(request),
+            nullptr,
+            0,
+            &bytesReturned,
+            nullptr) != FALSE;
     }
 
-    void DriverClient::UpdateLoop() {
-        while (m_running) {
-            ESPData tempData{};
-            DWORD bytesReturned = 0;
-
-            if (DeviceIoControl(
-                m_hDriver,
-                IOCTL_GET_ESP_DATA,
-                nullptr,
-                0,
-                &tempData,
-                sizeof(tempData),
-                &bytesReturned,
-                nullptr
-            )) {
-                std::lock_guard<std::mutex> lock(m_dataMutex);
-                m_currentData = tempData;
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    bool DriverClient::ReadBlock(DemoReadResult& outResult) {
+        if (m_hDriver == INVALID_HANDLE_VALUE) {
+            return false;
         }
+
+        DWORD bytesReturned = 0;
+        ZeroMemory(&outResult, sizeof(outResult));
+
+        return DeviceIoControl(
+            m_hDriver,
+            IOCTL_DEMO_READ_BLOCK,
+            nullptr,
+            0,
+            &outResult,
+            sizeof(outResult),
+            &bytesReturned,
+            nullptr) != FALSE &&
+            bytesReturned == sizeof(outResult);
+    }
+
+    void DriverClient::ClearTarget() {
+        if (m_hDriver == INVALID_HANDLE_VALUE) {
+            return;
+        }
+
+        DWORD bytesReturned = 0;
+        DeviceIoControl(
+            m_hDriver,
+            IOCTL_DEMO_CLEAR_TARGET,
+            nullptr,
+            0,
+            nullptr,
+            0,
+            &bytesReturned,
+            nullptr);
     }
 }

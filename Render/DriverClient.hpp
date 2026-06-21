@@ -1,27 +1,19 @@
 #pragma once
 #include <Windows.h>
-#include <atomic>
-#include <mutex>
-#include <thread>
-#include <vector>
-#include "ESPData.hpp"  // Structures partagées
+#include "DemoData.hpp"
 
-namespace ESP {
+namespace Demo {
     class DriverClient {
     public:
         DriverClient();
         ~DriverClient();
 
         bool Initialize();
-        void GetData(ESPData& outData);
+        bool RegisterTarget(DWORD processId, const DemoMemoryBlock* block, std::uint64_t nonce);
+        bool ReadBlock(DemoReadResult& outResult);
+        void ClearTarget();
 
     private:
-        void UpdateLoop();
-
         HANDLE m_hDriver = INVALID_HANDLE_VALUE;
-        std::atomic<bool> m_running{ false };
-        std::thread m_workerThread;
-        std::mutex m_dataMutex;
-        ESPData m_currentData{};
     };
 }

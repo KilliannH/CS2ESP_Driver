@@ -1,23 +1,26 @@
 #include <ntddk.h>
 #include "Globals.h"
 #include "IOControl.h"
-#include "Process.h"
+#include "Demo.h"
 
 VOID DriverUnload(PDRIVER_OBJECT DriverObject) {
     UNICODE_STRING symLink;
-    RtlInitUnicodeString(&symLink, L"\\DosDevices\\CS2ESP");
+    RtlInitUnicodeString(&symLink, DEMO_SYMBOLIC_LINK);
     IoDeleteSymbolicLink(&symLink);
     if (DriverObject->DeviceObject)
         IoDeleteDevice(DriverObject->DeviceObject);
-    if (g_TargetProcess)
-        ObDereferenceObject(g_TargetProcess);
-    DbgPrint("[CS2] Driver Unloaded\n");
+    ClearDemoTarget();
+    DbgPrint("[MemDemo] Driver unloaded\n");
 }
 
 NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
     UNICODE_STRING devName, symLink;
-    RtlInitUnicodeString(&devName, L"\\Device\\CS2ESP");
-    RtlInitUnicodeString(&symLink, L"\\DosDevices\\CS2ESP");
+    UNREFERENCED_PARAMETER(RegistryPath);
+
+    ExInitializeFastMutex(&g_TargetLock);
+
+    RtlInitUnicodeString(&devName, DEMO_DEVICE_NAME);
+    RtlInitUnicodeString(&symLink, DEMO_SYMBOLIC_LINK);
 
     PDEVICE_OBJECT devObj = NULL;
     NTSTATUS status = IoCreateDevice(DriverObject, 0, &devName, FILE_DEVICE_UNKNOWN, 0, FALSE, &devObj);
@@ -35,6 +38,6 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
     DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DriverDeviceControl;
     DriverObject->DriverUnload = DriverUnload;
 
-    DbgPrint("[CS2] Driver Loaded successfully\n");
+    DbgPrint("[MemDemo] Driver loaded successfully\n");
     return STATUS_SUCCESS;
 }

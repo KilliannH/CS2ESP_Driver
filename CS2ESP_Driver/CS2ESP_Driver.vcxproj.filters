@@ -33,10 +33,7 @@
     <ClInclude Include="Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Process.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.h">
+    <ClInclude Include="Demo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IOControl.h">
@@ -53,10 +50,7 @@
     <ClCompile Include="Memory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Process.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.c">
+    <ClCompile Include="Demo.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IOControl.c">
