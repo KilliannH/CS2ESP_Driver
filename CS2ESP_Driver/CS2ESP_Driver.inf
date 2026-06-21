@@ -1,5 +1,5 @@
 ; CS2ESP_Driver.inf
-; Fichier INF pour installer le driver kernel CS2ESP
+; Educational kernel memory demo driver INF.
 
 [Version]
 Signature="$WINDOWS NT$"
@@ -23,17 +23,17 @@ CS2ESP_Driver.sys = 1
 %ManufacturerName%=Standard,NT$ARCH$
 
 [Standard.NT$ARCH$]
-%DriverDesc% = CS2ESP_Install, CS2ESP
+%DriverDesc% = MemoryDemo_Install, MemoryDemo
 
-[CS2ESP_Install]
+[MemoryDemo_Install]
 CopyFiles=DriverCopyFiles
 AddReg=DriverAddReg
-AddService=CS2ESP,2,CS2ESP_Service
+AddService=MemoryDemo,2,MemoryDemo_Service
 
-[CS2ESP_Install.Services]
-AddService=CS2ESP,2,CS2ESP_Service
+[MemoryDemo_Install.Services]
+AddService=MemoryDemo,2,MemoryDemo_Service
 
-[CS2ESP_Service]
+[MemoryDemo_Service]
 DisplayName=%ServiceDesc%
 ServiceType=1
 StartType=3
@@ -48,7 +48,7 @@ HKR,,"Driver","0","CS2ESP_Driver.sys"
 HKR,,"Description","0","%DriverDesc%"
 
 [Strings]
-ManufacturerName="CS2ESP Driver"
-DriverDesc="CS2ESP Kernel Driver"
-ServiceDesc="CS2ESP Kernel Driver Service"
-DiskName="CS2ESP Driver Installation Disk"
+ManufacturerName="Memory Demo Driver"
+DriverDesc="Educational Kernel Memory Demo Driver"
+ServiceDesc="Educational Kernel Memory Demo Driver Service"
+DiskName="Memory Demo Driver Installation Disk"

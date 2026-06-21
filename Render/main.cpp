@@ -1,35 +1,75 @@
 #include "DriverClient.hpp"
-#include "Overlay.hpp"
 #include <Windows.h>
+#include <chrono>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
+#include <iomanip>
+#include <iostream>
+#include <thread>
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
-    // 1. Initialisation du client driver
-    ESP::DriverClient driver;
+namespace {
+    std::uint64_t CreateNonce(const DemoMemoryBlock& block) {
+        LARGE_INTEGER ticks{};
+        QueryPerformanceCounter(&ticks);
+
+        return (static_cast<std::uint64_t>(GetCurrentProcessId()) << 32) ^
+            static_cast<std::uint64_t>(ticks.QuadPart) ^
+            reinterpret_cast<std::uint64_t>(&block);
+    }
+}
+
+
+int main() {
+    DemoMemoryBlock demoBlock{};
+    const std::uint64_t nonce = CreateNonce(demoBlock);
+
+    demoBlock.Magic = DEMO_MEMORY_MAGIC;
+    demoBlock.Version = DEMO_MEMORY_VERSION;
+    demoBlock.Size = sizeof(DemoMemoryBlock);
+    demoBlock.Nonce = nonce;
+    demoBlock.Counter = 0;
+    strcpy_s(demoBlock.Message, "Initial owned-process demo block");
+
+    Demo::DriverClient driver;
     if (!driver.Initialize()) {
-        MessageBoxA(nullptr, "Failed to open driver. Make sure it's loaded.", "Error", MB_ICONERROR);
+        std::cerr << "Failed to open \\\\.\\MemoryDemo. Load the driver first. Win32 error: "
+            << GetLastError() << '\n';
         return 1;
     }
 
-    // 2. Initialisation de l'overlay
-    ESP::Overlay overlay;
-    if (!overlay.Initialize()) {
-        MessageBoxA(nullptr, "Failed to initialize overlay (DX11/WinAPI).", "Error", MB_ICONERROR);
+    std::cout << "Educational kernel memory demo\n";
+    std::cout << "PID: " << GetCurrentProcessId() << '\n';
+    std::cout << "Block address: 0x" << std::hex
+        << reinterpret_cast<std::uintptr_t>(&demoBlock) << std::dec << '\n';
+    std::cout << "Nonce: 0x" << std::hex << nonce << std::dec << '\n';
+
+    if (!driver.RegisterTarget(GetCurrentProcessId(), &demoBlock, nonce)) {
+        std::cerr << "IOCTL_DEMO_REGISTER_TARGET failed. Win32 error: "
+            << GetLastError() << '\n';
         return 1;
     }
 
-    // 3. Boucle principale
-    MSG msg = { 0 };
-    while (msg.message != WM_QUIT) {
-        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+    for (LONG i = 1; i <= 10; ++i) {
+        demoBlock.Counter = i;
+        sprintf_s(demoBlock.Message, "Owned process counter update %ld", i);
+
+        DemoReadResult result{};
+        if (!driver.ReadBlock(result)) {
+            std::cerr << "IOCTL_DEMO_READ_BLOCK failed. Win32 error: "
+                << GetLastError() << '\n';
+            return 1;
         }
-        else {
-            overlay.Render(driver);
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
+
+        std::cout << "Read " << result.BytesRead
+            << " bytes, NTSTATUS=0x" << std::hex << result.Status << std::dec
+            << ", counter=" << result.Block.Counter
+            << ", message=\"" << result.Block.Message << "\"\n";
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
-    overlay.Cleanup();
+    driver.ClearTarget();
+    std::cout << "Demo completed.\n";
     return 0;
 }

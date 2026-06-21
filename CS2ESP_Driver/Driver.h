@@ -1,40 +1,36 @@
 #pragma once
 #include <ntddk.h>
-#include "ntapi.h"  // Include les déclarations manquantes
+#include "ntapi.h"
 
-// --- Constantes ---
-#define DRIVER_TAG 'CS2D'
-#define MAX_ENEMIES 64
-#define IOCTL_GET_ESP_DATA CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define DRIVER_TAG 'DMeM'
+#define DEMO_DEVICE_NAME L"\\Device\\MemoryDemo"
+#define DEMO_SYMBOLIC_LINK L"\\DosDevices\\MemoryDemo"
 
-// --- Structures personnalisées ---
-typedef struct _Vector3 {
-    float x, y, z;
-} Vector3;
+#define DEMO_MEMORY_MAGIC 0x4F4D45444D454D4BULL
+#define DEMO_MEMORY_VERSION 1
+#define DEMO_MESSAGE_BYTES 64
 
-typedef struct _EnemyInfo {
-    Vector3 pos;
-    int health;
-    int team;
-} EnemyInfo;
+#define IOCTL_DEMO_REGISTER_TARGET CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_WRITE_DATA)
+#define IOCTL_DEMO_READ_BLOCK CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_READ_DATA)
+#define IOCTL_DEMO_CLEAR_TARGET CTL_CODE(FILE_DEVICE_UNKNOWN, 0x802, METHOD_BUFFERED, FILE_WRITE_DATA)
 
-typedef struct _ESP_DATA {
-    float viewMatrix[16];
-    int enemyCount;
-    EnemyInfo enemies[MAX_ENEMIES];
-} ESP_DATA, * PESP_DATA;
+typedef struct _DEMO_MEMORY_BLOCK {
+    ULONGLONG Magic;
+    ULONG Version;
+    ULONG Size;
+    ULONGLONG Nonce;
+    LONG Counter;
+    CHAR Message[DEMO_MESSAGE_BYTES];
+} DEMO_MEMORY_BLOCK, * PDEMO_MEMORY_BLOCK;
 
-// --- Offsets CS2 ---
-typedef struct _GameOffsets {
-    ULONG dwEntityList;
-    ULONG dwLocalPlayerController;
-    ULONG dwLocalPlayerPawn;
-    ULONG dwViewMatrix;
-    ULONG m_iPawnHealth;
-    ULONG m_iHealth;
-    ULONG m_iTeamNum;
-    ULONG m_iPendingTeamNum;
-    ULONG m_hPlayerPawn;
-    ULONG m_pGameSceneNode;
-    ULONG m_vecAbsOrigin;
-} GameOffsets;
+typedef struct _DEMO_REGISTER_REQUEST {
+    ULONGLONG ProcessId;
+    ULONGLONG Address;
+    ULONGLONG Nonce;
+} DEMO_REGISTER_REQUEST, * PDEMO_REGISTER_REQUEST;
+
+typedef struct _DEMO_READ_RESULT {
+    NTSTATUS Status;
+    ULONG BytesRead;
+    DEMO_MEMORY_BLOCK Block;
+} DEMO_READ_RESULT, * PDEMO_READ_RESULT;

@@ -2,7 +2,8 @@
 #include "Driver.h"
 
 extern PEPROCESS g_TargetProcess;
-extern ULONG64 g_ClientBase;
-extern ULONG64 g_ViewMatrixAddr;
-extern BOOLEAN g_IsInitialized;
-extern const GameOffsets g_Offsets;
+extern HANDLE g_TargetProcessId;
+extern PVOID g_TargetAddress;
+extern ULONGLONG g_TargetNonce;
+extern BOOLEAN g_TargetRegistered;
+extern FAST_MUTEX g_TargetLock;
