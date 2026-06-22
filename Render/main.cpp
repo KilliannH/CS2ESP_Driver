@@ -128,18 +128,20 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp
             if (!WorldToScreen(snap.viewMatrix, e.x, e.y, e.z, W, H, fX, fY))
                 continue;
 
-            // Project head (approximate: +72 units up in Z)
+            // Project head (approximate: +64 units up in Z, matches CS2 player height)
             float hX, hY;
-            if (!WorldToScreen(snap.viewMatrix, e.x, e.y, e.z + 72.0f, W, H, hX, hY))
+            if (!WorldToScreen(snap.viewMatrix, e.x, e.y, e.z + 64.0f, W, H, hX, hY))
                 continue;
 
             // Box dimensions
+            // Small padding: 2px on top and bottom so the box tightly wraps the player
+            constexpr float kPad = 2.0f;
             float boxH = fY - hY;
-            float boxW = boxH * 0.4f;
+            float boxW = boxH * 0.45f;
             int bLeft  = (int)(fX - boxW / 2);
-            int bTop   = (int)(hY);
+            int bTop   = (int)(hY - kPad);
             int bRight = (int)(fX + boxW / 2);
-            int bBot   = (int)(fY);
+            int bBot   = (int)(fY + kPad);
 
             if (boxH < 4.0f || boxH > (float)H) continue;
 

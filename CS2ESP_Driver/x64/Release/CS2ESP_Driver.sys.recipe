@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\killi\Documents\Simple Driver\x64\Release\CS2ESP_Driver.sys</FullPath>
+      <FullPath>c:\Users\killi\Documents\Simple Driver\x64\Release\CS2ESP_Driver.sys</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

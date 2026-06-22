@@ -29,6 +29,8 @@
 #define OFF_GAME_SCENE_NODE         0x330
 /* CGameSceneNode::m_vecAbsOrigin = 200 = 0xC8 (CONFIRME par class dump) */
 #define OFF_SCENE_ABS_ORIGIN        0xC8
+/* m_iHealth sur le pawn (C_BaseEntity) — source directe, pas de cache controller */
+#define OFF_PAWN_HEALTH             0x34C
 
 /* Entity list : header 0x10 bytes + chunks, stride 0x70 par slot */
 #define ENTITY_LIST_HEADER          0x10
@@ -177,18 +179,10 @@ NTSTATUS ReadCS2Data(HANDLE pid, ULONGLONG clientBase, PCS2_ESP_DATA out)
         /* Exclure le joueur local */
         if (ctrlPtr == localCtrlPtr) continue;
 
-        /* Filtrage : sante valide + pawn en vie */
-        LONG health = 0;
-        ReadInt32(process, ctrlPtr + OFF_CTRL_PAWN_HEALTH, &health);
-        if (health <= 0 || health > 100) continue;
-
-        BOOLEAN alive = FALSE;
-        ReadMem(process, ctrlPtr + OFF_CTRL_PAWN_ALIVE, &alive, sizeof(BOOLEAN));
-        if (!alive) continue;
-
-        /* Equipe (byte : 2=T, 3=CT) */
+        /* Filtrage equipe d'abord — pas besoin du pawn pour ca */
         UCHAR team = 0;
         ReadMem(process, ctrlPtr + OFF_CTRL_TEAM, &team, sizeof(UCHAR));
+        if (team != 2 && team != 3) continue;            /* pas encore assigne */
         if (localTeam != 0 && team == localTeam) continue; /* meme equipe */
 
         /* Resoudre pawn handle -> pawn entity ptr */
@@ -196,6 +190,27 @@ NTSTATUS ReadCS2Data(HANDLE pid, ULONGLONG clientBase, PCS2_ESP_DATA out)
         ReadInt32(process, ctrlPtr + OFF_CTRL_HPAWN, &hPawn);
         ULONGLONG pawnEntPtr = ResolveHandle(process, entityListBase, hPawn);
         if (!IS_VALID_USER_PTR(pawnEntPtr)) continue;
+
+        /*
+         * Sante : on lit d'abord sur le pawn directement (m_iHealth @ 0x334).
+         * Le champ cache du controller (m_iPawnHealth) peut rester a 0
+         * pendant quelques frames apres le spawn de debut de round,
+         * alors que la vraie sante sur le pawn est deja a 100.
+         */
+        LONG health = 0;
+        ReadInt32(process, pawnEntPtr + OFF_PAWN_HEALTH, &health);
+        if (health <= 0 || health > 100) {
+            /* Fallback : cache controller */
+            ReadInt32(process, ctrlPtr + OFF_CTRL_PAWN_HEALTH, &health);
+            if (health <= 0 || health > 100) continue;
+        }
+
+        /*
+         * m_bPawnIsAlive peut aussi etre faux en tout debut de round.
+         * On s'y fie seulement si la sante est invalide (deja verifie
+         * ci-dessus), donc on ne skip plus sur ce flag pour ne pas
+         * manquer les premières frames du spawn.
+         */
 
         /* Scene node -> position */
         ULONGLONG sceneNode = GetSceneNode(process, pawnEntPtr);
